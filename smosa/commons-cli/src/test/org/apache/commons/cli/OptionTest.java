@@ -157,6 +157,24 @@ public class OptionTest {
     }
 
     /**
+     * Additional test for {@link Option#equals(Object)}
+     */
+    @Test
+    public void equalsWithItself() {
+        Option option0 = new Option("v", "verbose", false, "");
+        assertEquals("The option should be equal to itself", option0, option0);
+    }
+
+    /**
+     * Additional test for {@link Option#equals(Object)}
+     */
+    @Test
+    public void equalsWithNull() {
+        Option option0 = new Option("v", "verbose", false, "");
+        assertNotEquals("The option should be not equal to null", option0, null);
+    }
+
+    /**
      * Test mainly for {@link Option#hasArg()}
      * @throws Throwable
      */
@@ -197,15 +215,115 @@ public class OptionTest {
       assertEquals("It should have default arg name", "arg", option0.getArgName());
       assertFalse("It should not have a long name", option0.hasLongOpt());
       assertFalse("It should not accept any arg value", option0.hasArgs());
-      assertEquals("It should be the one passed on costruction", "NO_ARGS_ALLOWED", opt);
+      assertEquals("It should be the one passed on construction", "NO_ARGS_ALLOWED", opt);
   }
 
   // TODO Add tests for uncovered methods/branches
-    // addValueForProcessing
+    // processValue()
     // getValue
     // getValues
 
+    /**
+     * Additional test for {@link Option#addValueForProcessing(String)}
+     */
+    @Test
+    public void addValueForProcessingUninitializedArgs() {
+      Option option = new Option("", "");
+      assertThrows("It should throw RuntimeException because no args are accepted", RuntimeException.class, () -> option.addValueForProcessing(""));
+    }
 
+    /**
+     * Additional test for {@link Option#addValueForProcessing(String)}
+     */
+    @Test
+    public void addValueForProcessingOneValueOneArg() {
+        Option option = new Option("", "");
+        option.setArgs(1);
+        option.addValueForProcessing("value");
+        assertTrue("It should successfully parse a single value, storing it into the list of values", option.getValues().length > 0);
+    }
 
+    /**
+     * Additional test for {@link Option#addValueForProcessing(String)}
+     * It shows the fact that addValueForProcessing() calls add() that accepts any values when numberOfArgs==0, when it should not (-2 is unlimited)
+     */
+    @Test
+    public void addValueForProcessingOneValueZeroArgs() {
+        Option option = new Option("", "");
+        option.setArgs(0);
+        assertThrows("It should throw RuntimeException", RuntimeException.class, () -> option.addValueForProcessing("value"));
+    }
 
+    /**
+     * Additional test for {@link Option#addValueForProcessing(String)}
+     * It shows the fact that addValueForProcessing() calls add() that accepts any values when numberOfArgs==0, when it should not (-2 is unlimited)
+     */
+    @Test
+    public void addValueForProcessingTwoValuesZeroArgs() {
+        Option option = new Option("", "");
+        option.setArgs(0);
+        option.addValueForProcessing("value1");
+        assertThrows("It should throw RuntimeException", RuntimeException.class, () -> option.addValueForProcessing("value2"));
+    }
+
+    /**
+     * Additional test for {@link Option#addValueForProcessing(String)}
+     * It shows the fact that addValueForProcessing() calls add() that accepts two more values than numberOfArgs (when numberOfArgs>0), when it should not
+     */
+    @Test
+    public void addValueForProcessingThreeValuesOneArg() {
+        Option option = new Option("", "");
+        option.setArgs(1);
+        option.addValueForProcessing("value1");
+        option.addValueForProcessing("value2");
+        assertThrows("It should throw RuntimeException", RuntimeException.class, () -> option.addValueForProcessing("value3"));
+    }
+
+    /**
+     * Additional test for {@link Option#addValueForProcessing(String)}
+     * It shows the fact that addValueForProcessing() calls add() that accepts two more values than numberOfArgs (when numberOfArgs>0), when it should not
+     */
+    @Test
+    public void addValueForProcessingFourValuesOneArg() {
+        Option option = new Option("", "");
+        option.setArgs(1);
+        option.addValueForProcessing("value1");
+        option.addValueForProcessing("value2");
+        option.addValueForProcessing("value3");
+        assertThrows("It should throw RuntimeException", RuntimeException.class, () -> option.addValueForProcessing("value4"));
+    }
+
+    /**
+     * Additional test for {@link Option#addValueForProcessing(String)}
+     */
+    @Test
+    public void addValueForProcessingThreeCSVsUnlimitedArgs() {
+        Option option = new Option("", "");
+        option.setArgs(Option.UNLIMITED_VALUES);
+        option.setValueSeparator(',');
+        option.addValueForProcessing("1,2,3");
+        assertEquals("It should have three values", 3, option.getValues().length);
+    }
+
+    /**
+     * Additional test for {@link Option#addValueForProcessing(String)}
+     */
+    @Test
+    public void addValueForProcessingParseThreeCSVsTwoArgs() {
+        Option option = new Option("", "");
+        option.setArgs(2);
+        option.setValueSeparator(',');
+        option.addValueForProcessing("1,2,3");
+        assertEquals("It should have two values", 2, option.getValues().length);
+    }
+
+    /**
+     * Additional test for {@link Option#addValueForProcessing(String)}
+     */
+    @Test
+    public void clearValues() {
+        Option option = new Option("", "");
+        option.clearValues();
+        assertNull("It should be null", option.getValues());
+    }
 }
